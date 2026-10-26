@@ -955,7 +955,7 @@ body.tour-open { padding-bottom: 60vh; }
   position: relative;
   display: flex;
   align-items: center;
-  padding: 8px 12px 6px;
+  padding: 10px 12px 5px 12px ;
   border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--line);
