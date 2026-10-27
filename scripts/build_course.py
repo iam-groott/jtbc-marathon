@@ -49,7 +49,7 @@ COURSES = {
              "desc": "군자역 부근", "labelDir": "right"},
             {"id": "kondae", "name": "건대입구역", "km": 27.4, "kmLabel": "약 27.4km", "tabName": "건대입구역", "tabKm": "약 27.4km",
              "desc": "건대입구역 부근", "labelDir": "left"},
-            {"id": "seokchon", "name": "석촌호수 사거리", "km": 32.1, "kmLabel": "약 32.1km", "tabName": "석촌호수 사거리", "tabKm": "약 32.1km",
+            {"id": "seokchon", "name": "석촌호수", "km": 32.1, "kmLabel": "약 32.1km", "tabName": "석촌호수", "tabKm": "약 32.1km",
              "desc": "석촌호수 사거리 부근", "labelDir": "left", "labelOffset": [-6, -13]},
             {"id": "hakyeoul", "name": "학여울역", "km": 35.5, "kmLabel": "약 35.5km", "tabName": "학여울역", "tabKm": "약 35.5km",
              "desc": "학여울역 부근", "labelDir": "bottom", "labelOffset": [-33, 6]},

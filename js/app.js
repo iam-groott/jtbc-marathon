@@ -1026,9 +1026,16 @@
       $.each(aid.items, function (j, item) {
         $items.append($('<span class="chip"></span>').addClass('chip-' + (AID_TYPES[item] || 'etc')).text(item));
       });
-      // 품목이 없는 거리 표지는 고도를 보여 줌
+      // 품목이 없는 거리 표지는 고도를 보여 줌: 해발 + 직전 표지부터 여기까지 오르막 합(▲)·내리막 합(▼)
       if (aid.items.length === 0) {
-        $items.append($('<span class="chip chip-etc"></span>').text('고도 ' + Math.round(aid.ele) + 'm'));
+        const fromKm = i > 0 ? course.aid[i - 1].km : 0;
+        const change = elevChange(fromKm, aid.km);
+        const stepLabel = String(Math.round((aid.km - fromKm) * 10) / 10);
+        $items.addClass('aid-elev')
+          .append($('<span class="ae-alt"></span>').text('해발 ' + Math.round(aid.ele) + 'm'))
+          .append($('<span class="ae-up"></span>').text('▲ ' + Math.round(change.up) + 'm'))
+          .append($('<span class="ae-dn"></span>').text('▼ ' + Math.round(change.down) + 'm'))
+          .append($('<span class="ae-lab"></span>').text('직전 ' + stepLabel + 'km'));
       }
       // 1줄: 현재 날씨, 2줄: CP 제공 품목
       const $body = $('<span class="aid-body"></span>');
@@ -1040,6 +1047,26 @@
       $btn.append($body);
       $list.append($('<li></li>').append($btn));
     });
+  }
+
+  // fromKm ~ toKm 구간의 누적 상승(오르막 합)·누적 하강(내리막 합), m
+  // 고저도(profile: [km, 해발])의 이웃한 점끼리 높이 차를 오르막·내리막으로 나눠 더함
+  function elevChange(fromKm, toKm) {
+    const profile = course.profile;
+    let up = 0;
+    let down = 0;
+    for (let i = 1; i < profile.length; i++) {
+      if (profile[i - 1][0] < fromKm || profile[i][0] > toKm) {
+        continue;
+      }
+      const diff = profile[i][1] - profile[i - 1][1];
+      if (diff > 0) {
+        up += diff;
+      } else {
+        down -= diff;
+      }
+    }
+    return { up: up, down: down };
   }
 
   function findAid(km) {

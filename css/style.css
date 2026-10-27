@@ -1084,3 +1084,11 @@ body.tour-open { padding-bottom: 60vh; }
 .leaflet-tooltip.cp-label.aid-label .lab-sub { display: block; }
 /* 위치를 옮긴 이름표(labelOffset)는 꼬리가 엉뚱한 곳을 가리켜서 숨김 */
 .leaflet-tooltip.cp-label.lab-moved::before { display: none; }
+
+/* 구간 정보 고도: 해발 + 직전 구간 오르막 합(▲, 마젠타)·내리막 합(▼, 파랑) */
+.aid-items.aid-elev { align-items: baseline; gap: 8px; margin-top: 2px; font-size: 0.72rem; }
+.ae-alt { color: #fff; font-weight: 600; }
+.ae-up, .ae-dn { font-family: var(--latin); font-weight: 700; font-size: 0.7rem; }
+.ae-up { color: #ff6fae; }
+.ae-dn { color: #6f9bff; }
+.ae-lab { font-size: 0.66rem; color: #6b7080; }
