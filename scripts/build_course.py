@@ -35,11 +35,11 @@ COURSES = {
         "raceEnd": "2026-11-01T14:00:00+09:00",
         "serviceEnd": "2026-11-01T14:00:00+09:00",
         "markerStepKm": 5.0,
+        # 처음 지도 화면의 여백(px): 작을수록 코스가 크게 보임. 풀코스는 지점 이름표 자리만 남기고 좁게
+        "mapPadding": {"topLeft": [60, 30], "bottomRight": [110, 24]},
         "checkpoints": [
             {"id": "start", "name": "광화문광장", "km": 0.0, "kmLabel": "0km 출발", "tabName": "광화문", "tabKm": "0km",
              "desc": "광화문광장(출발)", "labelDir": "top"},
-            {"id": "euljiro", "name": "을지로3가역", "km": 3.4, "kmLabel": "약 3.4km", "tabName": "을지로3가", "tabKm": "3.4km",
-             "desc": "을지로3가역 부근", "labelDir": "bottom"},
             {"id": "sinseol", "name": "신설동역", "km": 20.0, "kmLabel": "약 20.0km", "tabName": "신설동", "tabKm": "20km",
              "desc": "신설동역 부근", "labelDir": "right"},
             {"id": "gunja", "name": "군자역", "km": 25.4, "kmLabel": "약 25.4km", "tabName": "군자", "tabKm": "25.4km",
@@ -47,9 +47,11 @@ COURSES = {
             {"id": "kondae", "name": "건대입구역", "km": 27.4, "kmLabel": "약 27.4km", "tabName": "건대입구", "tabKm": "27.4km",
              "desc": "건대입구역 부근", "labelDir": "right"},
             {"id": "seokchon", "name": "석촌호수 사거리", "km": 32.5, "kmLabel": "약 32.5km", "tabName": "석촌호수", "tabKm": "32.5km",
-             "desc": "석촌호수 사거리 부근", "labelDir": "left"},
+             # labelOffset [x, y]: 이름표를 기본 위치에서 더 옮길 때(px). 석촌호수는 학여울 점과 헷갈리지 않게 위로
+             "desc": "석촌호수 사거리 부근", "labelDir": "left", "labelOffset": [-10, -14]},
             {"id": "hakyeoul", "name": "학여울역", "km": 35.5, "kmLabel": "약 35.5km", "tabName": "학여울", "tabKm": "35.5km",
-             "desc": "학여울역 부근", "labelDir": "bottom"},
+             # 학여울은 왼쪽으로: 아래·오른쪽 아래에 두면 바로 옆 수서IC 점에 걸려 수서IC 이름표처럼 보임
+             "desc": "학여울역 부근", "labelDir": "left"},
             {"id": "suseo", "name": "수서IC", "km": 38.1, "kmLabel": "약 38.1km", "tabName": "수서IC", "tabKm": "38.1km",
              "desc": "수서IC 부근", "labelDir": "right"},
             {"id": "finish", "name": "올림픽공원", "km": 42.195, "kmLabel": "42.195km 도착", "tabName": "올림픽공원", "tabKm": "42.195km",
@@ -159,6 +161,7 @@ def build(course_id):
             "tabName": spec["tabName"],
             "tabKm": spec["tabKm"],
             "labelDir": spec.get("labelDir", "top"),
+            "labelOffset": spec.get("labelOffset"),
             "desc": spec["desc"],
             "lat": round(p["lat"], 6),
             "lon": round(p["lon"], 6),
@@ -204,6 +207,8 @@ def build(course_id):
         # 이 시각 이후로는 페이지가 날씨 대신 마무리 인사를 보여 준다 (수집은 두 코스 중 늦은 시각까지)
         "serviceEnd": conf["serviceEnd"],
         "totalKm": official_km,
+        # 처음 지도 화면 여백 (없으면 화면 기본값)
+        "mapPadding": conf.get("mapPadding"),
         "track": track,
         "profile": profile,
         "checkpoints": checkpoints,

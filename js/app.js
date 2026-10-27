@@ -401,7 +401,8 @@
       marker.bindTooltip(labelHtml(cp), {
         permanent: true,
         direction: dir,
-        offset: offsets[dir] || offsets.top,
+        // course.json의 labelOffset이 있으면 그 값으로 (이름표가 다른 점과 헷갈릴 때 위치를 더 옮김)
+        offset: cp.labelOffset || offsets[dir] || offsets.top,
         className: 'cp-label',
         interactive: true
       });
@@ -417,8 +418,8 @@
     // 이름표가 좌우로 나오므로 양옆에 여유를 둠
     courseBounds = line.getBounds();
     resetMapView(false);
-    // 지도 이동 범위 제한: 처음 화면 기준으로 코스 범위의 60%만큼 여유를 두고 그 밖으로는 못 나가게
-    map.setMaxBounds(courseBounds.pad(0.6));
+    // 지도 이동 범위 제한: 처음 화면 기준으로 코스 범위의 90%만큼 여유를 두고 그 밖으로는 못 나가게
+    map.setMaxBounds(courseBounds.pad(0.9));
     map.options.maxBoundsViscosity = 1.0;
     // 처음 화면보다 한 단계까지만 축소 가능
     map.setMinZoom(map.getZoom() - 1);
@@ -427,10 +428,12 @@
 
   // 처음 지도 화면(코스 전체가 보이는 줌·중심)으로 되돌림
   function resetMapView(animate) {
+    // 여백은 코스 파일의 mapPadding (풀코스는 좁게 해서 크게 보이게), 없으면 기본값
+    // 기본값: 도착 지점 이름표가 오른쪽으로 나오는 경우가 많아 오른쪽 여유를 조금 더 둠
+    const padding = course.mapPadding || { topLeft: [90, 20], bottomRight: [120, 14] };
     map.fitBounds(courseBounds, {
-      // 도착 지점 이름표가 오른쪽으로 나오는 경우가 많아 오른쪽 여유를 조금 더 둠
-      paddingTopLeft: [90, 20],
-      paddingBottomRight: [120, 14],
+      paddingTopLeft: padding.topLeft,
+      paddingBottomRight: padding.bottomRight,
       animate: animate
     });
   }
