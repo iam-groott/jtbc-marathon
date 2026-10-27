@@ -996,7 +996,9 @@
       const marker = L.marker([aid.lat, aid.lon], {
         icon: L.divIcon({
           className: 'aid-icon',
-          html: '<div class="aid-pin aid-' + aidKind(aid) + '" style="--ring:' + kmColor(aid.km) + '">' + label + '</div>',
+          // 출발·도착 표지(edge)는 숫자 대신 '출발'/'도착'
+          html: '<div class="aid-pin aid-' + aidKind(aid) + (aid.edge ? ' aid-edge' : '') + '" style="--ring:' + kmColor(aid.km) + '">' +
+            edgeText(aid, label) + '</div>',
           iconSize: [24, 24],
           iconAnchor: [12, 12]
         }),
@@ -1004,7 +1006,7 @@
       }).addTo(aidLayer);
       // 이름표: 1줄 '거리 · 고도', 2줄 '현재 날씨', 3줄 '제공 품목'(있을 때만)
       const wx = aidWeatherText(aid);
-      const tip = label + 'km · ' + Math.round(aid.ele) + 'm' +
+      const tip = label + 'km' + (aid.edge ? ' ' + edgeText(aid, '') : '') + ' · ' + Math.round(aid.ele) + 'm' +
         (wx ? '<span class="lab-sub">' + wx + '</span>' : '') +
         (aid.items.length ? '<span class="lab-sub">' + aid.items.join(' · ') + '</span>' : '');
       // 마커마다 툴팁을 붙이면 모바일에서 누를 때마다 열린 채로 쌓이므로, 내용만 저장해 두고 공용 이름표로 보여 줌
@@ -1016,26 +1018,45 @@
     });
   }
 
+  // 출발·도착 표지 이름 ('출발'/'도착'), 그 밖의 표지는 넘겨받은 글자 그대로
+  function edgeText(aid, other) {
+    if (aid.edge === 'start') {
+      return '출발';
+    }
+    if (aid.edge === 'finish') {
+      return '도착';
+    }
+    return other;
+  }
+
   function renderAidList() {
     const $list = $('#aidList').empty();
     $.each(course.aid || [], function (i, aid) {
       const label = String(aid.km).replace('.0', '');
       const $btn = $('<button type="button"></button>').attr('data-km', aid.km);
-      $btn.append($('<span class="aid-km"></span>').text(label + 'km'));
+      // 거리 숫자 + 작은 'km' (42.195km도 한 줄에 들어가게)
+      $btn.append($('<span class="aid-km"></span>').text(label).append($('<small></small>').text('km')));
       const $items = $('<span class="aid-items"></span>');
       $.each(aid.items, function (j, item) {
         $items.append($('<span class="chip"></span>').addClass('chip-' + (AID_TYPES[item] || 'etc')).text(item));
       });
       // 품목이 없는 거리 표지는 고도를 보여 줌: 해발 + 직전 표지부터 여기까지 오르막 합(▲)·내리막 합(▼)
       if (aid.items.length === 0) {
-        const fromKm = i > 0 ? course.aid[i - 1].km : 0;
-        const change = elevChange(fromKm, aid.km);
-        const stepLabel = String(Math.round((aid.km - fromKm) * 10) / 10);
         $items.addClass('aid-elev')
-          .append($('<span class="ae-alt"></span>').text('해발 ' + Math.round(aid.ele) + 'm'))
-          .append($('<span class="ae-up"></span>').text('▲ ' + Math.round(change.up) + 'm'))
-          .append($('<span class="ae-dn"></span>').text('▼ ' + Math.round(change.down) + 'm'))
-          .append($('<span class="ae-lab"></span>').text('직전 ' + stepLabel + 'km'));
+          .append($('<span class="ae-alt"></span>').text('해발 ' + Math.round(aid.ele) + 'm'));
+        if (i > 0) {
+          // 출발(첫 줄)은 앞 구간이 없어서 해발만
+          const fromKm = course.aid[i - 1].km;
+          const change = elevChange(fromKm, aid.km);
+          const stepLabel = String(Math.round((aid.km - fromKm) * 10) / 10);
+          $items
+            .append($('<span class="ae-up"></span>').text('▲ ' + Math.round(change.up) + 'm'))
+            .append($('<span class="ae-dn"></span>').text('▼ ' + Math.round(change.down) + 'm'))
+            .append($('<span class="ae-lab"></span>').text('직전 ' + stepLabel + 'km'));
+        }
+        if (aid.edge) {
+          $items.append($('<span class="ae-edge"></span>').text(edgeText(aid, '')));
+        }
       }
       // 1줄: 현재 날씨, 2줄: CP 제공 품목
       const $body = $('<span class="aid-body"></span>');
