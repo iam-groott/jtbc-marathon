@@ -1071,7 +1071,8 @@ body.tour-open { padding-bottom: 60vh; }
 
 /* 숫자 강조 */
 .now-stats dd { font-family: var(--latin); letter-spacing: -0.01em; }
-.aid-km { font-family: var(--latin); }
+.aid-km { width: 68px; font-family: var(--latin); white-space: nowrap; letter-spacing: -0.02em; }
+.aid-km small { margin-left: 1px; font-size: 0.7em; font-weight: 700; color: var(--text-sub); letter-spacing: 0; }
 
 /* 사용 안내·CCTV 버튼의 노랑은 그대로 두고, 진행 점만 그라데이션 색으로 */
 .tour-dot.on { background: var(--magenta); }
@@ -1092,3 +1093,6 @@ body.tour-open { padding-bottom: 60vh; }
 .ae-up { color: #ff6fae; }
 .ae-dn { color: #6f9bff; }
 .ae-lab { font-size: 0.66rem; color: #6b7080; }
+/* 출발·도착 표지: 지도 핀은 글자('출발'/'도착'), 목록은 작은 표시 */
+.aid-pin.aid-edge { font-size: 8px; letter-spacing: -0.03em; }
+.ae-edge { padding: 0 6px; border-radius: 999px; border: 1px solid #3a3d46; color: var(--silver); font-size: 0.64rem; line-height: 1.5; }
