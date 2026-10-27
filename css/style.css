@@ -263,7 +263,7 @@ body {
 }
 .points button:last-child { border-right: none; }
 .points .p-name { display: block; font-size: 0.9rem; font-weight: 700; color: var(--white); }
-.points .p-km { display: block; font-size: 0.72rem; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.points .p-km { display: block; font-size: 0.72rem; color: var(--text-sub); font-variant-numeric: tabular-nums; margin-top:2px; }
 .points button { border-bottom: 3px solid transparent; /*border-bottom-color: #222;*/ }
 /* 선택 색은 지도의 코스·선택 지점과 같은 보라 */
 .points button.on { background: #1a1a1a; border-bottom-color: var(--accent); }
