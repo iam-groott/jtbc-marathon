@@ -1082,3 +1082,5 @@ body.tour-open { padding-bottom: 60vh; }
 .leaflet-tooltip.cp-label.on { z-index: 700; padding: 5px 9px; font-size: 13px; }
 .leaflet-tooltip.cp-label.on .lab-sub { display: block; }
 .leaflet-tooltip.cp-label.aid-label .lab-sub { display: block; }
+/* 위치를 옮긴 이름표(labelOffset)는 꼬리가 엉뚱한 곳을 가리켜서 숨김 */
+.leaflet-tooltip.cp-label.lab-moved::before { display: none; }

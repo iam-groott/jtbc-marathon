@@ -97,7 +97,9 @@
     return routeColor(km / course.totalKm);
   }
   let timelineCols = [];
-  let state = { pointId: 'start', range: 'now', view: 'weather', aidKm: null, posKm: null };
+  // picked: 사용자가 지점을 직접 골랐는지. 처음 화면에서는 지도 이름표를 모두 한 줄(이름·기온)로 두고,
+  //         지점 탭이나 지도를 눌러 고른 뒤부터 그 지점 이름표에 강수·풍속을 보여 줌
+  let state = { pointId: 'start', picked: false, range: 'now', view: 'weather', aidKm: null, posKm: null };
   let aidLayer = null;     // CP 표시 레이어 — 'CP' 버튼으로 켜기/끄기
   let aidOn = true;
   let weatherLayer = null; // 날씨 보기: 4개 지점 이름표 + 5km 표시
@@ -252,7 +254,7 @@
     if (weather.sample) {
       $('#sampleNotice').prop('hidden', false);
     }
-    $('#updatedAt').text(dataBaseTime() + ' 기상자료 기준');
+    $('#updatedAt').text(dataBaseTime() + ' 기준');
 
     renderPointTabs();
     initMap();
@@ -325,7 +327,7 @@
         .attr('data-id', cp.id)
         .attr('aria-pressed', 'false')
         .append($('<span class="p-name"></span>').text(cp.tabName || cp.name))
-        .append($('<span class="p-km"></span>').text('(' + (cp.tabKm || cp.km + 'km') + ')'));
+        .append($('<span class="p-km"></span>').text(cp.tabKm || cp.km + 'km'));
       $nav.append($btn);
     });
   }
@@ -403,13 +405,16 @@
         direction: dir,
         // course.json의 labelOffset이 있으면 그 값으로 (이름표가 다른 점과 헷갈릴 때 위치를 더 옮김)
         offset: cp.labelOffset || offsets[dir] || offsets.top,
-        className: 'cp-label',
+        // 옮긴 이름표는 말풍선 꼬리가 점을 가리키지 않으므로 꼬리를 숨김 (lab-moved)
+        className: 'cp-label' + (cp.labelOffset ? ' lab-moved' : ''),
         interactive: true
       });
       marker.on('click', function () {
+        state.picked = true;
         selectPoint(cp.id, false);
       });
       marker.getTooltip().on('click', function () {
+        state.picked = true;
         selectPoint(cp.id, false);
       });
       markers[cp.id] = marker;
@@ -537,10 +542,10 @@
     });
   }
 
-  // 선택한 지점만 주황색으로 표시
+  // 선택한 지점만 강조 (처음 화면처럼 사용자가 아직 고르지 않았으면 아무 지점도 강조하지 않음)
   function refreshMarkers() {
     $.each(course.checkpoints, function (i, cp) {
-      const active = cp.id === state.pointId;
+      const active = state.picked && cp.id === state.pointId;
       const marker = markers[cp.id];
       $(marker.getElement()).find('.cp-pin').toggleClass('on', active);
       $(marker.getTooltip().getElement()).toggleClass('on', active);
@@ -1270,6 +1275,7 @@
   // ---------- 컨트롤 ----------
   function bindControls() {
     $('#pointTabs').on('click', 'button', function () {
+      state.picked = true;
       selectPoint($(this).data('id'), true);
     });
     $('#viewTabs').on('click', 'button', function () {
