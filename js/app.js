@@ -436,6 +436,20 @@
     // 여백은 코스 파일의 mapPadding (풀코스는 좁게 해서 크게 보이게), 없으면 기본값
     // 기본값: 도착 지점 이름표가 오른쪽으로 나오는 경우가 많아 오른쪽 여유를 조금 더 둠
     const padding = course.mapPadding || { topLeft: [90, 20], bottomRight: [120, 14] };
+    // 코스 파일의 mapZoomIn: 코스 전체가 들어오는 줌보다 더 확대 (풀코스는 한 단계, 가운데 기준이라 끝부분이 살짝 잘릴 수 있음)
+    const zoomIn = course.mapZoomIn || 0;
+    const target = map.getBoundsZoom(courseBounds, false, L.point(
+      padding.topLeft[0] + padding.bottomRight[0], padding.topLeft[1] + padding.bottomRight[1]));
+    if (zoomIn) {
+      // fitBounds와 같은 중심(여백 반영)에 확대 줌으로 바로 맞춤
+      const offset = L.point(
+        (padding.bottomRight[0] - padding.topLeft[0]) / 2, (padding.bottomRight[1] - padding.topLeft[1]) / 2);
+      const zoom = target + zoomIn;
+      const centerPx = map.project(courseBounds.getSouthWest(), zoom)
+        .add(map.project(courseBounds.getNorthEast(), zoom)).divideBy(2).add(offset);
+      map.setView(map.unproject(centerPx, zoom), zoom, { animate: animate });
+      return;
+    }
     map.fitBounds(courseBounds, {
       paddingTopLeft: padding.topLeft,
       paddingBottomRight: padding.bottomRight,
@@ -447,6 +461,9 @@
   // 지도를 처음 화면으로 + 코스 보기의 CP 선택·위치 표시 해제, CP 표시 켜기/끄기 처음대로. 날씨 보기의 지점 선택은 그대로 둠
   function bindResetButton() {
     $('#resetBtn').on('click', function () {
+      // 지도 이름표도 처음처럼 '이름 기온' 한 줄로 (지점 탭·아래 날씨는 고른 지점 그대로)
+      state.picked = false;
+      refreshMarkers();
       resetMapState(true);
     });
   }

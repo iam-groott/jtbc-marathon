@@ -37,6 +37,8 @@ COURSES = {
         "markerStepKm": 5.0,
         # 처음 지도 화면의 여백(px): 작을수록 코스가 크게 보임. 풀코스는 지점 이름표 자리만 남기고 좁게
         "mapPadding": {"topLeft": [60, 30], "bottomRight": [110, 24]},
+        # 여백을 맞춰 코스 전체를 보여 준 뒤 더 확대할 줌 (0.25 = 한 단계, 확대 버튼 한 번은 0.5)
+        "mapZoomIn": 0.25,
         # labelDir: 이름표 방향(top/bottom/left/right), labelOffset [x, y]: 그 방향에서 더 옮길 거리(px, 오른쪽·아래가 +)
         "checkpoints": [
             {"id": "start", "name": "광화문광장", "km": 0.0, "kmLabel": "0km 출발", "tabName": "광화문", "tabKm": "0km",
@@ -70,8 +72,8 @@ COURSES = {
         "checkpoints": [
             {"id": "start", "name": "상암월드컵공원", "km": 0.0, "kmLabel": "0km 출발", "tabName": "상암월드컵공원", "tabKm": "0km",
              "desc": "상암월드컵공원(출발)", "labelDir": "right"},
-            {"id": "k5", "name": "5km 지점", "km": 5.0, "kmLabel": "약 5km", "tabName": "5km", "tabKm": "약 5km",
-             "desc": "5km 지점 부근", "labelDir": "left"},
+            {"id": "yanghwa", "name": "양화대교 남단", "km": 4.2, "kmLabel": "약 4.2km", "tabName": "양화대교 남단", "tabKm": "약 4.2km",
+             "desc": "양화대교 남단 부근", "labelDir": "right"},
             {"id": "finish", "name": "여의도공원", "km": 10.0, "kmLabel": "10km 도착", "tabName": "여의도공원",
              "tabKm": "10km", "desc": "여의도공원(도착)", "labelDir": "right"},
         ],
@@ -208,6 +210,7 @@ def build(course_id):
         "totalKm": official_km,
         # 처음 지도 화면 여백 (없으면 화면 기본값)
         "mapPadding": conf.get("mapPadding"),
+        "mapZoomIn": conf.get("mapZoomIn", 0),
         "track": track,
         "profile": profile,
         "checkpoints": checkpoints,
