@@ -207,6 +207,7 @@
     $('#updatedAt').text('날씨 안내를 마쳤어요');
     drawFarewellCourse();
     $('#farewell').prop('hidden', false);
+    $("#updatedAt").hide();
   }
 
   // 달린 코스를 선 하나로 그림 (지도 타일 없이 GPX 좌표만 사용)
