@@ -24,6 +24,21 @@ SIMPLIFY_STEP_M = 20.0
 # 코스별 설정. 풀코스 날씨 지점 km는 공식 코스도의 지명 위치를 GPX 경로에서 찾은 값(±0.2km).
 # 날씨 지점은 좌표(lat, lon)가 있으면 그 좌표, 없으면 km 위치를 경로에서 찾는다
 # raceStart: 출발 / raceEnd: 마감(제한 시간) / serviceEnd: 이 시각 이후 날씨 수집을 멈추고 마무리 인사 표시
+def time_range(first, last, step_min):
+    """'시:분' 글자 목록을 step_min 분 간격으로 만듦. 예: time_range("07:35", "07:45", 5) → ["07:35", "07:40", "07:45"]
+    시가 두 자리로 시작하면(07:35) 두 자리로, 한 자리면(2:20) 한 자리로 돌려줌"""
+    def to_min(text):
+        h, m = text.split(":")
+        return int(h) * 60 + int(m)
+    width = len(first.split(":")[0])
+    result = []
+    t = to_min(first)
+    while t <= to_min(last):
+        result.append(str(t // 60).zfill(width) + ":" + str(t % 60).zfill(2))
+        t += step_min
+    return result
+
+
 COURSES = {
     "full": {
         # 2026-10-29 공식 홈페이지 GPX (둔촌 사거리 반환 구간이 들어간 변경 코스). 고도도 공식 GPX 값 그대로 씀
@@ -47,6 +62,23 @@ COURSES = {
         },
         # 처음 지도 화면의 여백(px): 작을수록 코스가 크게 보임. 풀코스는 지점 이름표 자리만 남기고 좁게
         "mapPadding": {"topLeft": [60, 30], "bottomRight": [110, 24]},
+        # 예상 통과 시각: 출발 시각·목표 기록 선택지와 처음 선택값
+        # 07:30 휠체어, 07:33 엘리트·마스터즈 그룹 순차 출발 (뒤 그룹은 늦게 출발할 수 있어 08:20까지 선택지를 둠)
+        "pace": {
+            "starts": ["07:30", "07:33"] + time_range("07:35", "08:20", 5),
+            "defaultStart": "07:33",
+            "targets": time_range("2:20", "5:00", 10),
+            "defaultTarget": "4:00",
+        },
+        # 대회 당일 안내 [제목, 내용] (2026 공식 책자 '경기일정·대회안내' 기준)
+        "dayInfo": [
+            ["집결", "출발 그룹별로 07:00까지 광화문광장"],
+            ["출발", "07:30 휠체어 · 07:33 엘리트·마스터즈 그룹 순차 출발"],
+            ["경기 종료", "13:00 (올림픽공원)"],
+            ["물품 보관", "06:00까지 맡기기 권장 · 보관 차량 07:00 출발"],
+            ["지하철", "출발 광화문역(5호선) · 도착 한성백제역(9호선), 대회장 주차 불가"],
+            ["당일 문의", "02-2031-1935"],
+        ],
         # 여백을 맞춰 코스 전체를 보여 준 뒤 더 확대할 줌 (0.25 = 한 단계, 확대 버튼 한 번은 0.5)
         "mapZoomIn": 0.25,
         # labelDir: 이름표 방향(top/bottom/left/right), labelOffset [x, y]: 그 방향에서 더 옮길 거리(px, 오른쪽·아래가 +)
@@ -85,6 +117,22 @@ COURSES = {
         "aidExtra": [
             {"km": 3.8, "items": ["급수대"]},
             {"km": 7.3, "items": ["급수대"]},
+        ],
+        # 예상 통과 시각 (07:30 그룹 순차 출발)
+        "pace": {
+            "starts": time_range("07:30", "08:20", 5),
+            "defaultStart": "07:30",
+            "targets": time_range("0:30", "1:30", 5),
+            "defaultTarget": "1:00",
+        },
+        # 대회 당일 안내 [제목, 내용] (2026 공식 책자 '경기일정·대회안내' 기준)
+        "dayInfo": [
+            ["집결", "출발 그룹별로 07:00까지 상암 월드컵공원"],
+            ["출발", "07:30 그룹 순차 출발"],
+            ["경기 종료", "10:30 (여의도공원)"],
+            ["물품 보관", "06:00까지 맡기기 권장 · 보관 차량 07:00 출발"],
+            ["지하철", "출발 월드컵경기장역(6호선) · 도착 여의도역(5·9호선), 대회장 주차 불가"],
+            ["당일 문의", "02-2031-1935"],
         ],
         # 처음 지도 여백: 좌우를 같게 해서 코스가 가운데 오게
         "mapPadding": {"topLeft": [105, 20], "bottomRight": [105, 14]},
@@ -245,6 +293,9 @@ def build(course_id):
         "totalKm": official_km,
         # 처음 지도 화면 여백 (없으면 화면 기본값)
         "mapPadding": conf.get("mapPadding"),
+        # 예상 통과 시각 선택지, 대회 당일 안내
+        "pace": conf.get("pace"),
+        "dayInfo": conf.get("dayInfo", []),
         "mapZoomIn": conf.get("mapZoomIn", 0),
         "track": track,
         "profile": profile,
