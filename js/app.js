@@ -265,6 +265,8 @@
     renderWxLegend();
     loadCctv();
     renderRangeTabs();
+    renderEta();
+    renderDayInfo();
     selectPoint(state.pointId, false);
     // 처음 방문한 사람에게만 사용 안내를 자동으로 한 번 보여 줌
     if (!tourSeen('weather')) {
@@ -411,12 +413,10 @@
         interactive: true
       });
       marker.on('click', function () {
-        state.picked = true;
-        selectPoint(cp.id, false);
+        pickCheckpoint(cp.id);
       });
       marker.getTooltip().on('click', function () {
-        state.picked = true;
-        selectPoint(cp.id, false);
+        pickCheckpoint(cp.id);
       });
       markers[cp.id] = marker;
     });
@@ -505,6 +505,34 @@
     return '<span class="wxv wxv-' + type + '" style="--wx:' + color + '">' + text + '</span>';
   }
 
+  // 지도에서 지점을 눌렀을 때: 날씨 보기는 그 지점 날씨로, 예상 페이스 보기는 표에서 그 줄을 강조
+  function pickCheckpoint(id) {
+    if (state.view === 'eta') {
+      $('#etaList li').each(function () {
+        $(this).toggleClass('on', $(this).data('id') === id);
+      });
+      return;
+    }
+    state.picked = true;
+    selectPoint(id, false);
+  }
+
+  // 지도 이름표 내용을 지금 보기에 맞게 다시 넣음
+  function refreshCpLabels() {
+    $.each(course.checkpoints, function (i, cp) {
+      const tip = markers[cp.id].getTooltip();
+      tip.setContent(state.view === 'eta' ? etaLabelHtml(cp) : labelHtml(cp));
+      $(tip.getElement()).toggleClass('lab-eta', state.view === 'eta');
+    });
+  }
+
+  // 통과 시각 이름표: 1줄 '이름', 2줄 '09:14 · 8°' (날씨 보기 이름표와 폭이 비슷해서 서로 겹치지 않음, 바람은 아래 표에)
+  function etaLabelHtml(cp) {
+    const eta = etaOf(cp);
+    const temp = eta.col ? wxSpan('temp', eta.col.row.temp, fmt(eta.col.row.temp, 0) + '°') : '예보 전';
+    return (cp.tabName || cp.name) + '<span class="lab-sub"><b>' + minToHm(eta.min) + '</b> · ' + temp + '</span>';
+  }
+
   // 날씨 지점 이름표: 1줄 '이름 기온', 2줄 '강수 · 풍속' (가로 폭을 줄이려고 두 줄)
   function labelHtml(cp) {
     const now = getNowValues(cp);
@@ -563,7 +591,7 @@
   // 선택한 지점만 강조 (처음 화면처럼 사용자가 아직 고르지 않았으면 아무 지점도 강조하지 않음)
   function refreshMarkers() {
     $.each(course.checkpoints, function (i, cp) {
-      const active = state.picked && cp.id === state.pointId;
+      const active = state.view === 'weather' && state.picked && cp.id === state.pointId;
       const marker = markers[cp.id];
       $(marker.getElement()).find('.cp-pin').toggleClass('on', active);
       $(marker.getTooltip().getElement()).toggleClass('on', active);
@@ -582,8 +610,9 @@
       $(this).toggleClass('on', on).attr('aria-selected', on ? 'true' : 'false');
     });
     const isCourse = view === 'course';
-    $('.view-weather').prop('hidden', isCourse);
+    $('.view-weather').prop('hidden', view !== 'weather');
     $('#viewCourse').prop('hidden', !isCourse);
+    $('#viewEta').prop('hidden', view !== 'eta');
 
     if (isCourse) {
       map.removeLayer(weatherLayer);
@@ -598,7 +627,12 @@
       map.removeLayer(courseLayer);
       $('#aidLegend').prop('hidden', true);
       weatherLayer.addTo(map);
+      // 날씨 보기는 '이름 기온', 예상 페이스 보기는 '이름 통과 시각 + 그 시각 날씨' 이름표
+      refreshCpLabels();
       refreshMarkers(); // 다시 붙인 이름표에 선택 표시 복원
+      if (view === 'eta' && !tourSeen('eta')) {
+        setTimeout(startTour, 400);
+      }
     }
     // 탭을 바꾸면 지도는 늘 첫 화면에서 시작 (확대·이동, CP 선택, 위치 표시, CCTV 영상 초기화)
     resetMapState(false);
@@ -817,10 +851,17 @@
       { target: '.map-box', text: '지도에서 지점별\n기온·강수·풍속을 한눈에 볼 수 있어요.\n숫자 색은 아래 범례 기준이에요.' },
       { target: '.now', text: '선택한 지점의 지금 날씨예요.\n기온·강수·습도·풍속을\n범례 색으로 보여 줘요.' },
       { target: '.tl-wrap', text: '표를 옆으로 밀면\n시간별 날씨를 볼 수 있어요.\n빨간 점선 칸이 대회 시간({race})이에요.' },
+      { target: '#viewTabs button[data-view=eta]', text: '예상 페이스에서 목표 기록을 고르면\n지점별 예상 통과 시각과\n그때 날씨를 볼 수 있어요.' },
       { target: '#courseTabs', text: '풀코스와 10km 코스를\n여기서 바꿔 볼 수 있어요.' },
       { target: '#viewTabs button[data-view=course]', text: '코스 정보에서\n고저도와 구간별 날씨를 볼 수 있어요.' },
       { target: '#helpOpen', round: true, text: '이 안내는 언제든\n? 버튼으로 다시 볼 수 있어요.' },
       { target: '.foot-group:has(a[href*="instagram"])', text: '보러 와 주셔서 감사해요 :)\n모두 부상 없이 즐겁게 완주하세요!\nDesigned & Developed by @iam_groott' }
+    ],
+    eta: [
+      { target: '.eta-ctrl', text: '목표 기록과 출발 시각을 고르면\n지점별 통과 시각이 바뀌어요.\n뒤 그룹은 출발이 늦어질 수 있어요.' },
+      { target: '.map-box', text: '지도 이름표에도\n예상 통과 시각과\n그 시각 날씨가 나와요.' },
+      { target: '#etaList', text: '지점별 예상 통과 시각과\n그 시각에 가장 가까운\n정시 예보예요.' },
+      { target: '#helpOpen', round: true, text: '이 안내는 언제든\n? 버튼으로 다시 볼 수 있어요.' }
     ],
     course: [
       { target: '#aidToggle', side: 'right', text: '구간 버튼으로\n구간 표지를\n켜고 끌 수 있어요.\n표지를 누르면\n거리·고도·현재 날씨와\n급수대·스펀지가 나와요.' },
@@ -1444,6 +1485,153 @@
     renderNowStats(cp);
     renderTimeline();
     scrollToRange(state.range, false);
+  }
+
+  // ---------- 예상 통과 시각 ----------
+  // 목표 기록과 출발 시각으로 지점별 통과 시각을 계산하고(같은 속도 가정), 그 시각과 가장 가까운 정시 예보를 보여 줌
+  function renderEta() {
+    const pace = course.pace;
+    if (!pace) {
+      $('#etaSec').prop('hidden', true);
+      return;
+    }
+    const $target = $('#etaTarget').empty();
+    $.each(pace.targets, function (i, t) {
+      $target.append($('<option></option>').val(t).text(targetLabel(t)));
+    });
+    $target.val(pace.defaultTarget);
+    const $start = $('#etaStart').empty();
+    $.each(pace.starts, function (i, t) {
+      $start.append($('<option></option>').val(t).text(t));
+    });
+    $start.val(pace.defaultStart || pace.starts[0]);
+    $('#etaTarget, #etaStart').on('change', renderEtaList);
+    renderEtaList();
+  }
+
+  // 목표 기록 표시: '4:00' → '4시간', '2:20' → '2시간 20분', '0:30' → '30분'
+  function targetLabel(text) {
+    const min = hmToMin(text);
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    if (h === 0) {
+      return m + '분';
+    }
+    return h + '시간' + (m > 0 ? ' ' + m + '분' : '');
+  }
+
+  function hmToMin(text) {
+    const parts = text.split(':');
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  }
+
+  function minToHm(min) {
+    const h = Math.floor(min / 60);
+    const m = Math.round(min - h * 60);
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+
+  function renderEtaList() {
+    const targetMin = hmToMin($('#etaTarget').val());
+    // 1km 페이스 (예: 1km 5분 41초)
+    const paceSec = Math.round(targetMin * 60 / course.totalKm);
+    $('#etaPace').text('1km ' + Math.floor(paceSec / 60) + '분 ' + (paceSec % 60) + '초');
+
+    const $list = $('#etaList').empty();
+    $.each(course.checkpoints, function (i, cp) {
+      const eta = etaOf(cp);
+      const passMin = eta.min;
+      const col = eta.col;
+      const $li = $('<li></li>').attr('data-id', cp.id);
+      $li.append($('<span class="eta-name"></span>').text(cp.tabName || cp.name)
+        .append($('<small></small>').text(cp.tabKm || cp.km + 'km')));
+      $li.append($('<span class="eta-time"></span>').text(minToHm(passMin)));
+      const $wx = $('<span class="eta-wx"></span>');
+      if (col) {
+        $wx.append(weatherIcon(col));
+        $wx.append($(wxSpan('temp', col.row.temp, fmt(col.row.temp, 0) + '°')));
+        $wx.append($('<span class="eta-sub"></span>').html(
+          wxSpan('wind', col.row.wind, fmt(col.row.wind, 1) + 'm/s') +
+          (col.pop !== undefined && col.pop !== null ? ' · 비 ' + col.pop + '%' : '')));
+      } else {
+        $wx.append($('<span class="eta-sub"></span>').text('예보 전'));
+      }
+      $li.append($wx);
+      $list.append($li);
+    });
+    if (state.view === 'eta') {
+      refreshCpLabels();
+    }
+  }
+
+  // 한 지점의 예상 통과 시각(분)과 그 시각에 가장 가까운 정시 예보
+  function etaOf(cp) {
+    const targetMin = hmToMin($('#etaTarget').val());
+    const startMin = hmToMin($('#etaStart').val());
+    const passMin = startMin + targetMin * cp.km / course.totalKm;
+    // 가장 가까운 정시 (예: 09:29 → 09시, 09:31 → 10시)
+    const hour = Math.round(passMin / 60);
+    const key = course.raceStart.substring(0, 10) + 'T' + (hour < 10 ? '0' : '') + hour + ':00';
+    return { min: passMin, col: getValuesAt(cp, key) };
+  }
+
+  // 한 지점·한 시각의 값: 실황 → 초단기 → 단기 순서 (buildTimeline 과 같은 우선순위, 지난 시각도 실황으로 찾음)
+  function getValuesAt(cp, key) {
+    const grid = getGrid(cp);
+    if (!grid) {
+      return null;
+    }
+    const ncst = grid.ncst || {};
+    const ultra = grid.ultra ? grid.ultra.items : {};
+    const vilage = grid.vilage ? grid.vilage.items : {};
+    let row = null;
+    let source = '';
+    if (ncst[key]) {
+      row = ncst[key];
+      source = 'ncst';
+    } else if (ultra[key]) {
+      row = ultra[key];
+      source = 'ultra';
+    } else if (vilage[key]) {
+      row = vilage[key];
+      source = 'vilage';
+    }
+    if (!row) {
+      return null;
+    }
+    // 강수확률은 단기예보, 하늘상태는 예보에만 있어서 같은 시각 값을 빌려 씀
+    let pop = row.pop;
+    if ((pop === undefined || pop === null) && vilage[key]) {
+      pop = vilage[key].pop;
+    }
+    let sky = row.sky;
+    if ((sky === undefined || sky === null) && ultra[key]) {
+      sky = ultra[key].sky;
+    }
+    if ((sky === undefined || sky === null) && vilage[key]) {
+      sky = vilage[key].sky;
+    }
+    return { key: key, row: row, source: source, pop: pop, sky: sky };
+  }
+
+  // ---------- 대회 당일 안내 ----------
+  function renderDayInfo() {
+    const items = course.dayInfo || [];
+    if (items.length === 0) {
+      $('#daySec').prop('hidden', true);
+      return;
+    }
+    const $dl = $('#dayInfo').empty();
+    $.each(items, function (i, item) {
+      const $dd = $('<dd></dd>');
+      // 전화번호는 눌러서 바로 걸 수 있게
+      if (/^[0-9-]+$/.test(item[1])) {
+        $dd.append($('<a></a>').attr('href', 'tel:' + item[1]).text(item[1]));
+      } else {
+        $dd.text(item[1]);
+      }
+      $dl.append($('<div></div>').append($('<dt></dt>').text(item[0])).append($dd));
+    });
   }
 
   function renderNowStats(cp) {
