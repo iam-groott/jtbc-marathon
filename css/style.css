@@ -218,7 +218,7 @@ body {
 /* ---------- 보기 전환 (날씨 / 코스) ---------- */
 .views {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   padding: 0;
   margin: 0;
   background: var(--black);
@@ -1098,3 +1098,50 @@ body.tour-open { padding-bottom: 60vh; }
 .ae-edge { padding: 0 6px; border-radius: 999px; border: 1px solid #3a3d46; color: var(--silver); font-size: 0.64rem; line-height: 1.5; }
 /* 구간 정보 안내 문구 (급수·스펀지 위치 출처) */
 .aid-note { margin: 4px 0 0; font-size: 0.7rem; color: var(--text-sub); line-height: 1.5; }
+
+/* 예상 통과 시각 */
+.eta { margin-top: 16px; }
+.eta-ctrl { display: flex; gap: 12px; margin-top: 8px; font-size: 0.78rem; color: var(--text-sub); }
+.eta-ctrl label { display: flex; align-items: center; gap: 6px; }
+.eta-ctrl select {
+  padding: 5px 8px;
+  border: 1px solid #3a3d46;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--white);
+  font: inherit;
+  font-family: var(--latin);
+  font-weight: 700;
+}
+.eta-list { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.eta-list li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.eta-name { font-size: 0.84rem; font-weight: 700; line-height: 1.25; }
+.eta-name small { display: block; font-size: 0.68rem; font-weight: 500; color: var(--text-sub); }
+.eta-time { font-family: var(--latin); font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
+.eta-wx { display: flex; align-items: center; gap: 5px; min-width: 128px; font-size: 0.84rem; font-weight: 700; }
+.eta-wx svg { width: 24px; height: 24px; flex: none; }
+.eta-sub { font-size: 0.68rem; font-weight: 500; color: var(--text-sub); white-space: nowrap; }
+
+/* 대회 당일 안내 */
+.day-sec { margin-top: 16px; }
+.day-info { margin: 8px 0 0; border-top: 1px solid var(--line); }
+.day-info div { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
+.day-info dt { font-size: 0.74rem; color: var(--text-sub); }
+.day-info dd { margin: 0; font-size: 0.8rem; line-height: 1.45; }
+.day-info a { color: var(--white); font-family: var(--latin); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+
+/* 통과 시각 보기 */
+.view-eta[hidden] { display: none; }
+.eta { margin-top: 10px; }
+.eta-list li.on { background: #14151a; box-shadow: inset 3px 0 0 var(--magenta); }
+/* 통과 시각 보기의 지도 이름표: '이름' + 둘째 줄 '09:14 · 8°' */
+.leaflet-tooltip.cp-label.lab-eta .lab-sub { display: block; font-size: 12px; color: #c9cdd3; }
+.leaflet-tooltip.cp-label.lab-eta .lab-sub b { margin: 0; font-family: var(--latin); font-weight: 800; color: #fff; }
