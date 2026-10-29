@@ -1116,27 +1116,25 @@ body.tour-open { padding-bottom: 60vh; }
 .eta-list { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
 .eta-list li {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) 46px 26px 32px 40px 48px;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   min-height: 44px;
   padding: 4px 2px;
   border-bottom: 1px solid var(--line);
 }
-.eta-name { font-size: 0.84rem; font-weight: 700; line-height: 1.25; }
-.eta-name small { display: block; font-size: 0.68rem; font-weight: 500; color: var(--text-sub); }
-.eta-time { font-family: var(--latin); font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
-.eta-wx { display: flex; align-items: center; gap: 5px; min-width: 128px; font-size: 0.84rem; font-weight: 700; }
-.eta-wx svg { width: 24px; height: 24px; flex: none; }
-.eta-sub { font-size: 0.68rem; font-weight: 500; color: var(--text-sub); white-space: nowrap; }
+.eta-list li.eta-head { min-height: 0; padding: 6px 2px; font-size: 0.66rem; color: var(--text-sub); }
+.eta-list li.eta-head span { text-align: center; }
+.eta-list li.eta-head span:first-child { text-align: left; }
+.eta-name { min-width: 0; font-size: 0.82rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+.eta-name small { display: block; font-size: 0.66rem; font-weight: 500; color: var(--text-sub); }
+.eta-time { font-family: var(--latin); font-size: 0.92rem; font-weight: 800; letter-spacing: -0.02em; text-align: center; }
+.eta-icon { display: flex; justify-content: center; }
+.eta-icon svg { width: 24px; height: 24px; }
+.eta-temp { font-size: 0.86rem; font-weight: 700; text-align: center; }
+.eta-val { font-size: 0.7rem; text-align: center; white-space: nowrap; }
+.eta-none { grid-column: 3 / -1; font-size: 0.7rem; color: var(--text-sub); text-align: center; }
 
-/* 대회 당일 안내 */
-.day-sec { margin-top: 16px; }
-.day-info { margin: 8px 0 0; border-top: 1px solid var(--line); }
-.day-info div { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
-.day-info dt { font-size: 0.74rem; color: var(--text-sub); }
-.day-info dd { margin: 0; font-size: 0.8rem; line-height: 1.45; }
-.day-info a { color: var(--white); font-family: var(--latin); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
 /* 통과 시각 보기 */
 .view-eta[hidden] { display: none; }
