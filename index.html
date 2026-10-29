@@ -110,15 +110,6 @@
         </ul>
       </section>
 
-      <!-- 대회 당일 안내 (course-*.json 의 dayInfo) -->
-      <section class="day-sec" id="daySec" aria-labelledby="dayTitle">
-        <div class="sec-head">
-          <h2 id="dayTitle">대회 당일 안내</h2>
-        </div>
-        <dl id="dayInfo" class="day-info"></dl>
-        <p class="aid-note">2026 JTBC 서울마라톤 공식 책자 기준이에요. 현장 운영 상황에 따라 바뀔 수 있어요.</p>
-      </section>
-
       <!-- 값 색상 범례 (app.js 의 WX_SCALE 로 그림) -->
       <section class="wx-legend-sec" aria-label="값 색상 기준">
         <div class="wx-legend"></div>
@@ -133,11 +124,11 @@
             <span id="etaPace" class="sec-sub"></span>
           </div>
           <div class="eta-ctrl">
+            <label>출발 시각 <select id="etaStart"></select></label>
             <label>목표 기록 <select id="etaTarget"></select></label>
-            <label>출발 <select id="etaStart"></select></label>
           </div>
           <ul id="etaList" class="eta-list"></ul>
-          <p class="aid-note">같은 속도로 달린다고 가정한 시각이에요. 날씨는 그 시각과 가장 가까운 정시 예보예요.</p>
+          <p class="aid-note">예상 통과 시각과 날씨는 참고용으로만 봐 주세요. 실제 출발 시각과 레이스 상황에 따라 달라질 수 있어요.</p>
         </section>
       </div>
 
