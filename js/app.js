@@ -266,7 +266,6 @@
     loadCctv();
     renderRangeTabs();
     renderEta();
-    renderDayInfo();
     selectPoint(state.pointId, false);
     // 처음 방문한 사람에게만 사용 안내를 자동으로 한 번 보여 줌
     if (!tourSeen('weather')) {
@@ -858,7 +857,7 @@
       { target: '.foot-group:has(a[href*="instagram"])', text: '보러 와 주셔서 감사해요 :)\n모두 부상 없이 즐겁게 완주하세요!\nDesigned & Developed by @iam_groott' }
     ],
     eta: [
-      { target: '.eta-ctrl', text: '목표 기록과 출발 시각을 고르면\n지점별 통과 시각이 바뀌어요.\n뒤 그룹은 출발이 늦어질 수 있어요.' },
+      { target: '.eta-ctrl', text: '출발 시각과 목표 기록을 고르면\n지점별 통과 시각이 바뀌어요.\n뒤 그룹은 출발이 늦어질 수 있어요.' },
       { target: '.map-box', text: '지도 이름표에도\n예상 통과 시각과\n그 시각 날씨가 나와요.' },
       { target: '#etaList', text: '지점별 예상 통과 시각과\n그 시각에 가장 가까운\n정시 예보예요.' },
       { target: '#helpOpen', round: true, text: '이 안내는 언제든\n? 버튼으로 다시 볼 수 있어요.' }
@@ -1533,11 +1532,18 @@
 
   function renderEtaList() {
     const targetMin = hmToMin($('#etaTarget').val());
-    // 1km 페이스 (예: 1km 5분 41초)
+    // 1km 페이스 (예: 5'41"/km)
     const paceSec = Math.round(targetMin * 60 / course.totalKm);
-    $('#etaPace').text('1km ' + Math.floor(paceSec / 60) + '분 ' + (paceSec % 60) + '초');
+    const sec = paceSec % 60;
+    $('#etaPace').text(Math.floor(paceSec / 60) + "'" + (sec < 10 ? '0' : '') + sec + '"/km');
 
     const $list = $('#etaList').empty();
+    // 머리줄: 지점 · 통과 · 날씨 · 기온 · 강수 · 풍속
+    const $head = $('<li class="eta-head" aria-hidden="true"></li>');
+    $.each(['지점', '통과', '날씨', '기온', '강수', '풍속'], function (i, text) {
+      $head.append($('<span></span>').text(text));
+    });
+    $list.append($head);
     $.each(course.checkpoints, function (i, cp) {
       const eta = etaOf(cp);
       const passMin = eta.min;
@@ -1546,17 +1552,17 @@
       $li.append($('<span class="eta-name"></span>').text(cp.tabName || cp.name)
         .append($('<small></small>').text(cp.tabKm || cp.km + 'km')));
       $li.append($('<span class="eta-time"></span>').text(minToHm(passMin)));
-      const $wx = $('<span class="eta-wx"></span>');
+      // 예보: 날씨(아이콘) · 기온 · 강수 · 풍속
       if (col) {
-        $wx.append(weatherIcon(col));
-        $wx.append($(wxSpan('temp', col.row.temp, fmt(col.row.temp, 0) + '°')));
-        $wx.append($('<span class="eta-sub"></span>').html(
-          wxSpan('wind', col.row.wind, fmt(col.row.wind, 1) + 'm/s') +
-          (col.pop !== undefined && col.pop !== null ? ' · 비 ' + col.pop + '%' : '')));
+        const rainText = rainCellText(col.row);
+        $li.append($('<span class="eta-icon"></span>').append(weatherIcon(col)));
+        $li.append($('<span class="eta-temp"></span>').html(wxSpan('temp', col.row.temp, fmt(col.row.temp, 0) + '°')));
+        $li.append($('<span class="eta-val"></span>').html(
+          wxSpan('rain', col.row.rain || 0, (rainText === '-' ? '0' : rainText) + 'mm')));
+        $li.append($('<span class="eta-val"></span>').html(wxSpan('wind', col.row.wind, fmt(col.row.wind, 1) + 'm/s')));
       } else {
-        $wx.append($('<span class="eta-sub"></span>').text('예보 전'));
+        $li.append($('<span class="eta-none"></span>').text('예보 전'));
       }
-      $li.append($wx);
       $list.append($li);
     });
     if (state.view === 'eta') {
@@ -1612,26 +1618,6 @@
       sky = vilage[key].sky;
     }
     return { key: key, row: row, source: source, pop: pop, sky: sky };
-  }
-
-  // ---------- 대회 당일 안내 ----------
-  function renderDayInfo() {
-    const items = course.dayInfo || [];
-    if (items.length === 0) {
-      $('#daySec').prop('hidden', true);
-      return;
-    }
-    const $dl = $('#dayInfo').empty();
-    $.each(items, function (i, item) {
-      const $dd = $('<dd></dd>');
-      // 전화번호는 눌러서 바로 걸 수 있게
-      if (/^[0-9-]+$/.test(item[1])) {
-        $dd.append($('<a></a>').attr('href', 'tel:' + item[1]).text(item[1]));
-      } else {
-        $dd.text(item[1]);
-      }
-      $dl.append($('<div></div>').append($('<dt></dt>').text(item[0])).append($dd));
-    });
   }
 
   function renderNowStats(cp) {
