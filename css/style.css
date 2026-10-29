@@ -1096,3 +1096,5 @@ body.tour-open { padding-bottom: 60vh; }
 /* 출발·도착 표지: 지도 핀은 글자('출발'/'도착'), 목록은 작은 표시 */
 .aid-pin.aid-edge { font-size: 8px; letter-spacing: -0.03em; }
 .ae-edge { padding: 0 6px; border-radius: 999px; border: 1px solid #3a3d46; color: var(--silver); font-size: 0.64rem; line-height: 1.5; }
+/* 구간 정보 안내 문구 (급수·스펀지 위치 출처) */
+.aid-note { margin: 4px 0 0; font-size: 0.7rem; color: var(--text-sub); line-height: 1.5; }
