@@ -823,11 +823,11 @@
       { target: '.foot-group:has(a[href*="instagram"])', text: '보러 와 주셔서 감사해요 :)\n모두 부상 없이 즐겁게 완주하세요!\nDesigned & Developed by @iam_groott' }
     ],
     course: [
-      { target: '#aidToggle', side: 'right', text: '구간 버튼으로\n거리 표지를\n켜고 끌 수 있어요.\n번호 마커를 누르면\n거리·고도와\n현재 날씨가 나와요.' },
+      { target: '#aidToggle', side: 'right', text: '구간 버튼으로\n구간 표지를\n켜고 끌 수 있어요.\n표지를 누르면\n거리·고도·현재 날씨와\n급수대·스펀지가 나와요.' },
       { target: '#cctvToggle', require: '#cctvToggle', side: 'right', text: 'CCTV 버튼으로\n도로 CCTV 위치를\n켜고 끌 수 있어요.\n카메라 마커를 누르면\n실시간 영상이 나와요.' },
       { target: '.map-box', text: '지도에서 코스 선을 누르면\n그 지점의 거리와 고도가 표시돼요.' },
       { target: '#profWrap', text: '고저도를 손가락으로 밀면\n지도에 위치가 따라 움직여요.' },
-      { target: '#aidList li:first-child', text: '구간 정보 표의 줄을 누르면\n지도에서 그 위치와\n날씨·고도가 열려요.' },
+      { target: '#aidList li:first-child', text: '구간 정보 표의 줄을 누르면\n지도에서 그 위치와\n날씨·고도·급수 정보가 열려요.' },
       { target: '#resetBtn', text: '초기화를 누르면\n지도와 선택이 처음 상태로 돌아가요.' },
       { target: '#helpOpen', round: true, text: '이 안내는 언제든\n? 버튼으로 다시 볼 수 있어요.' },
       { target: '.foot-group:has(a[href*="instagram"])', text: '보러 와 주셔서 감사해요 :)\n모두 부상 없이 즐겁게 완주하세요!\nDesigned & Developed by @iam_groott' }
@@ -977,11 +977,12 @@
     '구급차': 'medic',
     '초코파이': 'food',
     '스포츠젤': 'food',
-    '바나나': 'food'
+    '바나나': 'food',
+    '간식': 'food'
   };
 
   function aidKind(aid) {
-    // 품목이 없으면 거리 표지(JTBC는 공식 CP 정보가 없어 5km·2.5km 거리 표지로 씀)
+    // 품목이 없으면 거리 표지 (풀코스는 공식 책자 지도의 급수·스펀지·간식 위치를 품목으로 넣음)
     if (!aid.items || aid.items.length === 0) {
       return 'mark';
     }
@@ -1040,31 +1041,32 @@
       $.each(aid.items, function (j, item) {
         $items.append($('<span class="chip"></span>').addClass('chip-' + (AID_TYPES[item] || 'etc')).text(item));
       });
-      // 품목이 없는 거리 표지는 고도를 보여 줌: 해발 + 직전 표지부터 여기까지 오르막 합(▲)·내리막 합(▼)
-      if (aid.items.length === 0) {
-        $items.addClass('aid-elev')
-          .append($('<span class="ae-alt"></span>').text('해발 ' + Math.round(aid.ele) + 'm'));
-        if (i > 0) {
-          // 출발(첫 줄)은 앞 구간이 없어서 해발만
-          const fromKm = course.aid[i - 1].km;
-          const change = elevChange(fromKm, aid.km);
-          const stepLabel = String(Math.round((aid.km - fromKm) * 10) / 10);
-          $items
-            .append($('<span class="ae-up"></span>').text('▲ ' + Math.round(change.up) + 'm'))
-            .append($('<span class="ae-dn"></span>').text('▼ ' + Math.round(change.down) + 'm'))
-            .append($('<span class="ae-lab"></span>').text('직전 ' + stepLabel + 'km'));
-        }
-        if (aid.edge) {
-          $items.append($('<span class="ae-edge"></span>').text(edgeText(aid, '')));
-        }
+      // 고도: 해발 + 직전 표지부터 여기까지 오르막 합(▲)·내리막 합(▼)
+      const $elev = $('<span class="aid-items aid-elev"></span>')
+        .append($('<span class="ae-alt"></span>').text('해발 ' + Math.round(aid.ele) + 'm'));
+      if (i > 0) {
+        // 출발(첫 줄)은 앞 구간이 없어서 해발만
+        const fromKm = course.aid[i - 1].km;
+        const change = elevChange(fromKm, aid.km);
+        const stepLabel = String(Math.round((aid.km - fromKm) * 10) / 10);
+        $elev
+          .append($('<span class="ae-up"></span>').text('▲ ' + Math.round(change.up) + 'm'))
+          .append($('<span class="ae-dn"></span>').text('▼ ' + Math.round(change.down) + 'm'))
+          .append($('<span class="ae-lab"></span>').text('직전 ' + stepLabel + 'km'));
       }
-      // 1줄: 현재 날씨, 2줄: CP 제공 품목
+      if (aid.edge) {
+        $elev.append($('<span class="ae-edge"></span>').text(edgeText(aid, '')));
+      }
+      // 1줄: 현재 날씨, 2줄: 고도, 3줄: 제공 품목(급수대·스펀지·간식, 있을 때만)
       const $body = $('<span class="aid-body"></span>');
       const wx = aidWeatherText(aid);
       if (wx) {
         $body.append($('<span class="aid-wx"></span>').html(wx));
       }
-      $body.append($items);
+      $body.append($elev);
+      if (aid.items.length > 0) {
+        $body.append($items);
+      }
       $btn.append($body);
       $list.append($('<li></li>').append($btn));
     });
