@@ -1143,3 +1143,10 @@ body.tour-open { padding-bottom: 60vh; }
 /* 통과 시각 보기의 지도 이름표: '이름' + 둘째 줄 '09:14 · 8°' */
 .leaflet-tooltip.cp-label.lab-eta .lab-sub { display: block; font-size: 12px; color: #c9cdd3; }
 .leaflet-tooltip.cp-label.lab-eta .lab-sub b { margin: 0; font-family: var(--latin); font-weight: 800; color: #fff; }
+
+/* 습도 숨김 (2026-10-30): 습도 값이 믿기 어려워 화면에서만 감춤. 다시 보이려면 이 묶음을 지우면 됨
+   - 현재 날씨의 3번째 칸(습도), 시간별 예보의 습도 줄, 대회 날씨 탭 범례의 4번째 줄(습도) */
+.now-stats { grid-template-columns: repeat(3, 1fr); }
+.now-stats div:nth-child(3) { display: none; }
+.tl-row.tl-humid { display: none; }
+.wx-legend-sec .wx-legend:not([data-types]) .wxl-row:nth-child(4) { display: none; }
