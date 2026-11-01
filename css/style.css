@@ -520,6 +520,8 @@ body {
 .page.ended .weather-only,
 .page.ended .content > :not(.foot) { display: none; }
 .page.ended .foot { margin-top: 8px; }
+/* 종료 화면에서도 코스 버튼은 보임 (다른 코스는 아직 진행 중일 수 있어서) */
+.page.ended #courseTabs { display: grid; }
 
 .farewell { padding: 28px var(--pad) 8px; }
 .farewell[hidden] { display: none; }
