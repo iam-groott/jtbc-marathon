@@ -203,7 +203,11 @@
   // ---------- 대회 종료 후 인사 ----------
   function renderFarewell() {
     $('.page').addClass('ended');
-    $('#dday').text('대회 종료');
+    // 코스마다 끝나는 시각이 달라서(10km 10:30, 풀코스 13:00) 종료 화면에서도 코스 버튼을 인사말 위에 보여 줌
+    // → 10km 주소로 들어온 사람도 아직 진행 중인 풀코스로 바로 넘어갈 수 있게
+    $('#courseTabs').insertBefore('#farewell');
+    // 코스별로 끝나는 시각이 달라서 '10km 종료'·'풀코스 종료'처럼 코스 이름을 붙임
+    $('#dday').text((course.shortName || '대회') + ' 종료');
     $('#updatedAt').text('날씨 안내를 마쳤어요');
     drawFarewellCourse();
     $('#farewell').prop('hidden', false);
